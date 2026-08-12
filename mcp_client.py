@@ -5,11 +5,15 @@ que permite gestionar tareas usando las herramientas expuestas por el server.
 """
 
 import asyncio
+import os
+import uuid
 
 from mcp import ClientSession
 from mcp.client.stdio import StdioServerParameters, stdio_client
 
 SERVER_SCRIPT = "mcp_server.py"
+
+DEFAULT_USER_ID = os.environ.get("TODO_USER_ID", "")
 
 
 async def run():
@@ -34,19 +38,21 @@ async def run():
                 elif option == "2":
                     title = input("Título: ").strip()
                     desc = input("Descripción (opcional): ").strip()
+                    user_id = input(f"User ID (UUID, Enter para usar '{DEFAULT_USER_ID}'): ").strip()
+                    user_id = user_id or DEFAULT_USER_ID
                     result = await session.call_tool(
                         "create_task",
-                        {"title": title, "description": desc},
+                        {"title": title, "description": desc, "user_id": user_id},
                     )
                     print(result.content[0].text, "\n")
 
                 elif option == "3":
-                    tid = int(input("Id de la tarea: ").strip())
+                    tid = input("Id (UUID) de la tarea: ").strip()
                     result = await session.call_tool("get_task", {"task_id": tid})
                     print(result.content[0].text, "\n")
 
                 elif option == "4":
-                    tid = int(input("Id de la tarea: ").strip())
+                    tid = input("Id (UUID) de la tarea: ").strip()
                     title = input("Nuevo título (Enter para no cambiar): ").strip() or None
                     desc = input("Nueva descripción (Enter para no cambiar): ").strip() or None
                     args = {"task_id": tid}
@@ -58,7 +64,7 @@ async def run():
                     print(result.content[0].text, "\n")
 
                 elif option == "5":
-                    tid = int(input("Id de la tarea: ").strip())
+                    tid = input("Id (UUID) de la tarea: ").strip()
                     action = input("Completar (c) / Desmarcar (d): ").strip().lower()
                     completed = action != "d"
                     result = await session.call_tool(
@@ -68,7 +74,7 @@ async def run():
                     print(result.content[0].text, "\n")
 
                 elif option == "6":
-                    tid = int(input("Id de la tarea a eliminar: ").strip())
+                    tid = input("Id (UUID) de la tarea a eliminar: ").strip()
                     result = await session.call_tool("delete_task", {"task_id": tid})
                     print(result.content[0].text, "\n")
 

@@ -1,34 +1,45 @@
-"""MCP Server que expone herramientas para gestionar la To Do List.
+"""MCP Server que gestiona la To Do List usando Supabase.
 
-Consume la API REST de Flask (app.py) ejecutándose en http://127.0.0.1:5000.
+Usa el service role key de Supabase para operar sobre la tabla `tasks`.
 Se ejecuta sobre stdio, ideal para conectar con clientes MCP o asistentes.
 """
 
 import os
 
-import requests
+from supabase import create_client
+
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+
+if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
+    raise SystemExit("Faltan variables de entorno SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY")
+
 from mcp.server.fastmcp import FastMCP
 
-API_URL = os.environ.get("TODO_API_URL", "http://127.0.0.1:5000")
+supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
 mcp = FastMCP("todo-list-mcp")
 
 
 @mcp.tool()
-def list_tasks(include_completed: bool = True) -> str:
-    """Lista todas las tareas.
+def list_tasks(include_completed: bool = True, user_id: str | None = None) -> str:
+    """Lista las tareas.
 
     Args:
         include_completed: si False, sólo devuelve las tareas pendientes.
+        user_id: si se indica, filtra por el usuario (UUID de auth.users).
 
     Returns:
         Una cadena con las tareas y su estado.
     """
-    resp = requests.get(
-        f"{API_URL}/tasks", params={"completed": str(include_completed).lower()}
-    )
-    resp.raise_for_status()
-    tasks = resp.json()
+    query = supabase.table("tasks").select("*")
+    if user_id:
+        query = query.eq("user_id", user_id)
+    if not include_completed:
+        query = query.eq("completed", False)
+    query = query.order("created_at", desc=True)
+    resp = query.execute()
+    tasks = resp.data
     if not tasks:
         return "No hay tareas."
     lines = []
@@ -39,37 +50,37 @@ def list_tasks(include_completed: bool = True) -> str:
 
 
 @mcp.tool()
-def create_task(title: str, description: str = "") -> str:
+def create_task(title: str, description: str = "", user_id: str | None = None) -> str:
     """Crea una nueva tarea.
 
     Args:
         title: título de la tarea (obligatorio).
         description: descripción opcional.
+        user_id: UUID del usuario dueño de la tarea (obligatorio).
 
     Returns:
         Confirmación con el id de la tarea creada.
     """
-    resp = requests.post(
-        f"{API_URL}/tasks", json={"title": title, "description": description}
-    )
-    if resp.status_code != 201:
-        return f"Error: {resp.text}"
-    task = resp.json()
+    if not user_id:
+        return "Error: se requiere user_id."
+    resp = supabase.table("tasks").insert(
+        {"title": title, "description": description, "user_id": user_id}
+    ).execute()
+    task = resp.data[0]
     return f"Tarea creada: id={task['id']}, título='{task['title']}'"
 
 
 @mcp.tool()
-def get_task(task_id: int) -> str:
+def get_task(task_id: str) -> str:
     """Obtiene los detalles de una tarea por su id.
 
     Args:
-        task_id: id de la tarea.
+        task_id: id (UUID) de la tarea.
     """
-    resp = requests.get(f"{API_URL}/tasks/{task_id}")
-    if resp.status_code == 404:
+    resp = supabase.table("tasks").select("*").eq("id", task_id).execute()
+    if not resp.data:
         return f"No existe la tarea con id={task_id}."
-    resp.raise_for_status()
-    t = resp.json()
+    t = resp.data[0]
     estado = "completada" if t["completed"] else "pendiente"
     return (
         f"id={t['id']}\ntítulo={t['title']}\n"
@@ -79,11 +90,11 @@ def get_task(task_id: int) -> str:
 
 
 @mcp.tool()
-def update_task(task_id: int, title: str | None = None, description: str | None = None) -> str:
+def update_task(task_id: str, title: str | None = None, description: str | None = None) -> str:
     """Actualiza el título o la descripción de una tarea.
 
     Args:
-        task_id: id de la tarea.
+        task_id: id (UUID) de la tarea.
         title: nuevo título (opcional).
         description: nueva descripción (opcional).
     """
@@ -94,47 +105,44 @@ def update_task(task_id: int, title: str | None = None, description: str | None 
         payload["description"] = description
     if not payload:
         return "No se proporcionaron campos para actualizar."
-    resp = requests.put(f"{API_URL}/tasks/{task_id}", json=payload)
-    if resp.status_code == 404:
+    resp = supabase.table("tasks").update(payload).eq("id", task_id).execute()
+    if not resp.data:
         return f"No existe la tarea con id={task_id}."
-    if not resp.ok:
-        return f"Error: {resp.text}"
-    t = resp.json()
+    t = resp.data[0]
     return f"Tarea actualizada: id={t['id']}, título='{t['title']}'"
 
 
 @mcp.tool()
-def complete_task(task_id: int, completed: bool = True) -> str:
+def complete_task(task_id: str, completed: bool = True) -> str:
     """Marca una tarea como completada o pendiente.
 
     Args:
-        task_id: id de la tarea.
+        task_id: id (UUID) de la tarea.
         completed: True para completar, False para reabrir.
     """
-    resp = requests.patch(
-        f"{API_URL}/tasks/{task_id}/complete", json={"completed": completed}
+    resp = (
+        supabase.table("tasks")
+        .update({"completed": completed})
+        .eq("id", task_id)
+        .execute()
     )
-    if resp.status_code == 404:
+    if not resp.data:
         return f"No existe la tarea con id={task_id}."
-    if not resp.ok:
-        return f"Error: {resp.text}"
-    t = resp.json()
+    t = resp.data[0]
     estado = "completada" if t["completed"] else "pendiente"
     return f"Tarea {t['id']} marcada como {estado}."
 
 
 @mcp.tool()
-def delete_task(task_id: int) -> str:
+def delete_task(task_id: str) -> str:
     """Elimina una tarea por su id.
 
     Args:
-        task_id: id de la tarea a eliminar.
+        task_id: id (UUID) de la tarea a eliminar.
     """
-    resp = requests.delete(f"{API_URL}/tasks/{task_id}")
-    if resp.status_code == 404:
+    resp = supabase.table("tasks").delete().eq("id", task_id).execute()
+    if not resp.data:
         return f"No existe la tarea con id={task_id}."
-    if not resp.ok:
-        return f"Error: {resp.text}"
     return f"Tarea {task_id} eliminada."
 
 

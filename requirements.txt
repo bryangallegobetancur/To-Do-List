@@ -1,3 +1,2 @@
-flask>=3.0
 mcp>=1.2
-requests>=2.31
+supabase>=2.5
