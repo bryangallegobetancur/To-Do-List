@@ -11,7 +11,7 @@ import uuid
 from mcp import ClientSession
 from mcp.client.stdio import StdioServerParameters, stdio_client
 
-SERVER_SCRIPT = "mcp_server.py"
+SERVER_SCRIPT = "mcp/mcp_server.py"
 
 DEFAULT_USER_ID = os.environ.get("TODO_USER_ID", "")
 

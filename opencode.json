@@ -3,7 +3,7 @@
   "mcp": {
     "todolist": {
       "type": "local",
-      "command": ["python", "E:/CURSO AI ENGINEER/ToDoList/mcp_server.py"],
+      "command": ["python", "E:/CURSO AI ENGINEER/ToDoList/mcp/mcp_server.py"],
       "enabled": true
     }
   }

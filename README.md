@@ -82,26 +82,27 @@ npm run build
 Instala dependencias Python:
 
 ```bash
+cd mcp
 pip install -r requirements.txt
 ```
 
-Crea un `.env` en la raíz (guíate por `.env.example`) con la **service role key**:
+Crea un `.env` en `mcp/` (guíate por `.env.example`) con la **service role key**:
 
 ```
 SUPABASE_URL=https://tu-proyecto.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=tu-service-role-key
 ```
 
-Probar el MCP Server directamente:
+Probar el MCP Server directamente (desde la raíz del repo):
 
 ```bash
-python mcp_server.py
+python mcp/mcp_server.py
 ```
 
 Usar el cliente interactivo (opcional, define `TODO_USER_ID` con tu UUID de `auth.users`):
 
 ```bash
-python mcp_client.py
+python mcp/mcp_client.py
 ```
 
 Conectar con un asistente (Claude Desktop, etc.) en `claude_desktop_config.json`:
@@ -111,7 +112,7 @@ Conectar con un asistente (Claude Desktop, etc.) en `claude_desktop_config.json`
   "mcpServers": {
     "todolist": {
       "command": "python",
-      "args": ["ruta/a/mcp_server.py"],
+      "args": ["ruta/a/mcp/mcp_server.py"],
       "env": {
         "SUPABASE_URL": "https://tu-proyecto.supabase.co",
         "SUPABASE_SERVICE_ROLE_KEY": "tu-service-role-key"
@@ -131,5 +132,5 @@ Conectar con un asistente (Claude Desktop, etc.) en `claude_desktop_config.json`
 | `frontend/src/components/auth/` | Formularios de login y registro |
 | `frontend/src/components/layout/ProtectedRoute.jsx` | Ruta protegida |
 | `frontend/supabase/migrations/` | Migraciones SQL (profiles + tasks) |
-| `mcp_server.py` | Servidor MCP sobre Supabase |
-| `mcp_client.py` | Cliente MCP interactivo |
+| `mcp/mcp_server.py` | Servidor MCP sobre Supabase |
+| `mcp/mcp_client.py` | Cliente MCP interactivo |
