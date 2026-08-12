@@ -1,10 +1,17 @@
 """Capa de acceso a datos para la To Do List usando SQLite."""
 
+import os
 import sqlite3
 from contextlib import contextmanager
 from pathlib import Path
 
-DB_PATH = Path(__file__).parent / "tasks.db"
+_is_vercel = os.environ.get("VERCEL") == "1"
+DB_PATH = Path(
+    os.environ.get(
+        "TODO_DB_PATH",
+        str(Path("/tmp/tasks.db") if _is_vercel else Path(__file__).parent / "tasks.db"),
+    )
+)
 
 
 def init_db() -> None:
