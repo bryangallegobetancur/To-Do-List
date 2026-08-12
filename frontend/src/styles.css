@@ -551,9 +551,9 @@ a {
   display: flex;
 }
 
-/* ---------- Sidebar (visible solo en claro) ---------- */
+/* ---------- Sidebar ---------- */
 .sidebar {
-  display: none;
+  display: flex;
   width: 240px;
   flex-shrink: 0;
   background-color: var(--sidebar-bg);
@@ -561,10 +561,6 @@ a {
   flex-direction: column;
   padding: 20px 16px;
   gap: 24px;
-}
-
-.theme-marino .sidebar {
-  display: flex;
 }
 
 .sidebar__nav {
@@ -665,15 +661,6 @@ a {
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.theme-carbon .topbar__brand,
-.theme-carbon .topbar__search {
-  display: none;
-}
-
-.theme-marino .topbar__brand {
-  display: none;
 }
 
 /* ---------- Theme toggle ---------- */
