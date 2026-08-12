@@ -1,10 +1,24 @@
 <!doctype html>
-<html lang="en">
+<html lang="es" class="theme-marino">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>To Do List</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=DM+Sans:wght@400;500;600&family=Urbanist:wght@600;700&family=Epilogue:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      ;(function () {
+        var stored = localStorage.getItem('theme')
+        var dark = window.matchMedia('(prefers-color-scheme: dark)').matches
+        var theme = stored || (dark ? 'theme-carbon' : 'theme-marino')
+        document.documentElement.className = theme
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>
