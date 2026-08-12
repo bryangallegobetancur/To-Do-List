@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
 
-export default function LoginForm() {
+export default function LoginForm({ onForgotPassword }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -45,6 +45,10 @@ export default function LoginForm() {
       />
 
       {error && <p role="alert">{error}</p>}
+
+      <button type="button" onClick={onForgotPassword}>
+        ¿Olvidaste tu contraseña?
+      </button>
 
       <button type="submit" disabled={loading}>
         {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}

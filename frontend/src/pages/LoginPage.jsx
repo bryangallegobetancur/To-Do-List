@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import LoginForm from '../components/auth/LoginForm'
 import RegisterForm from '../components/auth/RegisterForm'
+import ForgotPasswordForm from '../components/auth/ForgotPasswordForm'
 
 export default function LoginPage() {
   const [mode, setMode] = useState('login')
@@ -27,7 +28,11 @@ export default function LoginPage() {
           Registrarse
         </button>
       </nav>
-      {mode === 'login' ? <LoginForm /> : <RegisterForm />}
+      {mode === 'login' && (
+        <LoginForm onForgotPassword={() => setMode('forgot')} />
+      )}
+      {mode === 'register' && <RegisterForm />}
+      {mode === 'forgot' && <ForgotPasswordForm />}
     </div>
   )
 }
